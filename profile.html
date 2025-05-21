@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Moo Profile</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a> |
+    <a href="cow-create.html">Create Cow</a> |
+    <a href="herd.html">Herd</a> |
+    <a href="friends.html">Friends</a> |
+    <a href="messages.html">Messages</a>
+  </nav>
+
+  <h1>🐮 My Moo Profile</h1>
+
+  <div id="profileForm">
+    <input type="text" id="username" placeholder="Username" />
+    <textarea id="bio" placeholder="Tell us about yourself..."></textarea>
+    <input type="file" id="profilePic" accept="image/*" />
+    <button onclick="saveProfile()">Update Profile</button>
+    <div id="status"></div>
+  </div>
+
+  <p>Moo Points: <span id="mooPoints">0</span></p>
+  <img id="currentPic" src="default.png" alt="Profile Picture" width="150" />
+
+  <!-- Button to jump to Feed -->
+  <a href="feed.html" style="
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background-color: #f4a261;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    transition: background-color 0.3s ease;
+  "
+  onmouseover="this.style.backgroundColor='#e76f51';" 
+  onmouseout="this.style.backgroundColor='#f4a261';"
+  >
+    🐮 Go to Feed
+  </a>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <script>
+    // Firebase config (replace with your own config)
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7i3hbkBAF0HpCs8-9vrPbSzHryKzSwHk",
+      authDomain: "mootube-7c44b.firebaseapp.com",
+      projectId: "mootube-7c44b",
+      storageBucket: "mootube-7c44b.appspot.com",
+      messagingSenderId: "402263503226",
+      appId: "1:402263503226:web:f0fa1874fe6294996266c3",
+      measurementId: "G-QN2CF395GC"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const usernameInput = document.getElementById('username');
+    const bioInput = document.getElementById('bio');
+    const profilePicInput = document.getElementById('profilePic');
+    const currentPicImg = document.getElementById('currentPic');
+    const statusDiv = document.getElementById('status');
+    const mooPointsSpan = document.getElementById('mooPoints');
+
+    async function loadProfile() {
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        try {
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          const data = userDoc.data() || {};
+          usernameInput.value = data.username || '';
+          bioInput.value = data.bio || '';
+          mooPointsSpan.textContent = data.mooPoints || 0;
+
+          if (data.profilePicUrl) {
+            currentPicImg.src = data.profilePicUrl;
+          } else {
+            currentPicImg.src = 'default.png';
+          }
+        } catch (err) {
+          statusDiv.textContent = 'Error loading profile: ' + err.message;
+        }
+      });
+    }
+
+    async function saveProfile() {
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please log in!');
+        return;
+      }
+
+      statusDiv.textContent = 'Saving your profile... 🐮💾';
+
+      try {
+        let profilePicUrl = null;
+
+        if (profilePicInput.files.length > 0) {
+          const file = profilePicInput.files[0];
+          const fileRef = storage.ref().child(`profilePics/${user.uid}/${file.name}`);
+          await fileRef.put(file);
+          profilePicUrl = await fileRef.getDownloadURL();
+        }
+
+        const updateData = {
+          username: usernameInput.value.trim(),
+          bio: bioInput.value.trim(),
+        };
+
+        if (profilePicUrl) updateData.profilePicUrl = profilePicUrl;
+
+        await db.collection('users').doc(user.uid).set(updateData, { merge: true });
+
+        statusDiv.textContent = 'Profile updated! 🐄✨';
+
+        if (profilePicUrl) {
+          currentPicImg.src = profilePicUrl;
+        }
+      } catch (err) {
+        statusDiv.textContent = 'Error saving profile: ' + err.message;
+      }
+    }
+
+    window.saveProfile = saveProfile;
+
+    loadProfile();
+  </script>
+</body>
+</html>

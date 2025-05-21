@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Herd Viewer</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: auto;
+      padding: 1em;
+      background: #f7f7f7;
+      color: #333;
+    }
+    nav a {
+      margin-right: 10px;
+      text-decoration: none;
+      color: #005500;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1em;
+    }
+    #herdContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1em;
+    }
+    .cow-card {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cow-card img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-bottom: 0.5em;
+      height: 150px;
+      object-fit: cover;
+    }
+    .cow-name {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin-bottom: 0.3em;
+    }
+    .cow-personality {
+      font-style: italic;
+      margin-bottom: 0.5em;
+      color: #555;
+      min-height: 40px;
+    }
+    .vote-btn {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    .vote-btn:disabled {
+      background-color: #ccc;
+      cursor: default;
+    }
+    #loginPrompt {
+      text-align: center;
+      margin-top: 2em;
+      color: #b22222;
+    }
+    #noCows {
+      text-align: center;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="profile.html">Profile</a> |
+    <a href="cow-create.html">Create Cow</a> |
+    <a href="friends.html">Friends</a> |
+    <a href="messages.html">Messages</a>
+  </nav>
+
+  <h1>🐄 Meet the Herd!</h1>
+  <div id="herdContainer" class="herd-grid"></div>
+  <div id="noCows" style="display:none;">No approved cows yet! 🐮🐾</div>
+  <div id="loginPrompt" style="display:none;">Please log in to vote on cows!</div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // TODO: Replace this with your Firebase config object from your Firebase console!
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7i3hbkBAF0HpCs8-9vrPbSzHryKzSwHk",
+      authDomain: "mootube-7c44b.firebaseapp.com",
+      projectId: "mootube-7c44b",
+      storageBucket: "mootube-7c44b.appspot.com",
+      messagingSenderId: "402263503226",
+      appId: "1:402263503226:web:f0fa1874fe6294996266c3",
+      measurementId: "G-QN2CF395GC"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const herdContainer = document.getElementById('herdContainer');
+    const noCowsDiv = document.getElementById('noCows');
+    const loginPromptDiv = document.getElementById('loginPrompt');
+
+    let currentUser = null;
+    let userVotes = new Set();
+
+    auth.onAuthStateChanged(async (user) => {
+      currentUser = user;
+      if (!user) {
+        loginPromptDiv.style.display = 'block';
+      } else {
+        loginPromptDiv.style.display = 'none';
+        await loadUserVotes(user.uid);
+      }
+      loadHerd();
+    });
+
+    // Load all approved cows from Firestore
+    async function loadHerd() {
+      herdContainer.innerHTML = '';
+      noCowsDiv.style.display = 'none';
+
+      try {
+        const cowsSnapshot = await db.collection('cows')
+          .where('approved', '==', true)
+          .orderBy('timestamp', 'desc')
+          .get();
+
+        if (cowsSnapshot.empty) {
+          noCowsDiv.style.display = 'block';
+          return;
+        }
+
+        cowsSnapshot.forEach(doc => {
+          const cow = doc.data();
+          const cowId = doc.id;
+          const card = createCowCard(cow, cowId);
+          herdContainer.appendChild(card);
+        });
+      } catch (err) {
+        herdContainer.textContent = 'Error loading herd: ' + err.message;
+      }
+    }
+
+    // Create cow card DOM element
+    function createCowCard(cow, cowId) {
+      const card = document.createElement('div');
+      card.className = 'cow-card';
+
+      const img = document.createElement('img');
+      img.src = cow.photoURL || 'default-cow.png';
+      img.alt = cow.name || 'Highland Cow';
+
+      const name = document.createElement('div');
+      name.className = 'cow-name';
+      name.textContent = cow.name || 'Unnamed Moo';
+
+      const personality = document.createElement('div');
+      personality.className = 'cow-personality';
+      personality.textContent = cow.personality || 'A mysterious mooer...';
+
+      const voteBtn = document.createElement('button');
+      voteBtn.className = 'vote-btn';
+      voteBtn.textContent = `Vote (${cow.votes || 0})`;
+
+      if (!currentUser) {
+        voteBtn.disabled = true;
+        voteBtn.title = 'Log in to vote';
+      } else if (userVotes.has(cowId)) {
+        voteBtn.disabled = true;
+        voteBtn.textContent = `Voted (${cow.votes || 0})`;
+      }
+
+      voteBtn.onclick = () => castVote(cowId, voteBtn);
+
+      card.appendChild(img);
+      card.appendChild(name);
+      card.appendChild(personality);
+      card.appendChild(voteBtn);
+
+      return card;
+    }
+
+    // Load votes this user has already cast (to prevent multiple voting)
+    async function loadUserVotes(uid) {
+      userVotes.clear();
+      try {
+        const votesSnapshot = await db.collection('votes')
+          .where('userId', '==', uid)
+          .get();
+
+        votesSnapshot.forEach(doc => {
+          const voteData = doc.data();
+          if (voteData.cowId) userVotes.add(voteData.cowId);
+        });
+      } catch (err) {
+        console.error('Error loading user votes:', err);
+      }
+    }
+
+    // Cast a vote for a cow
+    async function castVote(cowId, btn) {
+      if (!currentUser) {
+        alert('Please log in to vote!');
+        return;
+      }
+      if (userVotes.has(cowId)) {
+        alert('You already voted for this cow!');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Voting...';
+
+      try {
+        // Add vote record
+        await db.collection('votes').add({
+          userId: currentUser.uid,
+          cowId,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Increment cow votes count atomically
+        const cowRef = db.collection('cows').doc(cowId);
+        await cowRef.update({
+          votes: firebase.firestore.FieldValue.increment(1)
+        });
+
+        userVotes.add(cowId);
+        btn.textContent = `Voted (${(parseInt(btn.textContent.match(/\d+/)) || 0) + 1})`;
+      } catch (err) {
+        alert('Error casting vote: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = `Vote (${btn.textContent.match(/\d+/) || 0})`;
+      }
+    }
+  </script>
+</body>
+</html>

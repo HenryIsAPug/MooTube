@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MooTube Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>🐮 Welcome to MooTube!</h1>
+
+  <div id="authSection">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Log In</button>
+    <button onclick="signup()">Sign Up</button>
+    <button onclick="logout()">Log Out</button>
+    <p id="authStatus"></p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7i3hbkBAF0HpCs8-9vrPbSzHryKzSwHk",
+      authDomain: "mootube-7c44b.firebaseapp.com",
+      projectId: "mootube-7c44b",
+      storageBucket: "mootube-7c44b.appspot.com",
+      messagingSenderId: "402263503226",
+      appId: "1:402263503226:web:f0fa1874fe6294996266c3",
+      measurementId: "G-QN2CF395GC"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const status = document.getElementById('authStatus');
+
+    function login() {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          status.textContent = 'Logged in! 🐄';
+          window.location.href = 'profile.html';
+        })
+        .catch(error => {
+          status.textContent = 'Login error: ' + error.message;
+        });
+    }
+
+    function signup() {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          status.textContent = 'Signed up! 🎉';
+          window.location.href = 'profile.html';
+        })
+        .catch(error => {
+          status.textContent = 'Signup error: ' + error.message;
+        });
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        status.textContent = 'Logged out.';
+      });
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        status.textContent = `Logged in as ${user.email}`;
+      } else {
+        status.textContent = 'Not logged in.';
+      }
+    });
+  </script>
+</body>
+</html>
+

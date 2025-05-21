@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Moo Messages</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="profile.html">Profile</a> |
+    <a href="cow-create.html">Create Cow</a> |
+    <a href="herd.html">Herd</a> |
+    <a href="friends.html">Friends</a>
+  </nav>
+
+  <h1>💬 Moo Mail</h1>
+
+  <!-- Message Input Section -->
+  <input type="text" id="messageTo" placeholder="Friend's Username">
+  <textarea id="messageText" placeholder="Write your message..."></textarea>
+  <button onclick="sendMessage()">Send Message</button>
+  <div id="messageStatus"></div>
+
+  <!-- Message Inbox Section -->
+  <h2>📥 Inbox</h2>
+  <ul id="inbox"></ul>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

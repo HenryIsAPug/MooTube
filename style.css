@@ -1,0 +1,176 @@
+/* General Body & Text */
+body {
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  background-color: #fff0f5;
+  padding: 20px;
+  text-align: center;
+  color: #333;
+  margin: 0;
+}
+
+/* Container for centered content */
+.container {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #ffe5ec;
+  border-radius: 15px;
+  box-shadow: 0 0 10px #faa;
+}
+
+/* Inputs and Buttons */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  margin: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid #f7b2b7;
+  width: 90%;
+  max-width: 400px;
+  font-size: 16px;
+  box-sizing: border-box;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+button {
+  margin: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background-color: #f7b2b7;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #f47174;
+}
+
+/* Links */
+a {
+  color: #d13a3a;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 20px;
+  background-color: #b0f2b6;
+  padding: 10px 20px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+a:hover {
+  background-color: #77dd77;
+  color: #333;
+}
+
+/* Herd Container Layout */
+#herdContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* Cow Card styling (unified class name) */
+.cow-card {
+  background: #fffbe6;
+  border: 2px dashed #c27ba0;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 15px;
+  box-shadow: 2px 2px 5px #ccc;
+  width: 250px;
+  text-align: left;
+  box-sizing: border-box;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  position: relative;
+}
+
+/* Buttons inside cow cards */
+.cow-card button {
+  margin: 5px 5px 0 0;
+  background-color: #ffadad;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.cow-card button:hover {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+/* Notification Count badge */
+#notificationCount {
+  background: red;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
+/* Notification Bell cursor and color handled dynamically by JS */
+
+/* Friend Requests & Friends List */
+#friendRequests, #friendList, #inbox {
+  list-style: none;
+  padding-left: 0;
+  max-width: 500px;
+  margin: 0 auto 20px auto;
+  text-align: left;
+}
+
+#friendRequests li, #friendList li, #inbox li {
+  background-color: #fff0f5;
+  border: 2px dashed #ff99cc;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+#friendRequests li button, #friendList li button {
+  margin-left: 10px;
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  #herdContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cow-card {
+    width: 90%;
+  }
+
+  input[type="text"], textarea {
+    width: 95%;
+  }
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MooTube Feed</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      background: #fffce6;
+      padding: 20px;
+      max-width: 650px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      color: #86592d;
+    }
+    form, .post {
+      background: #fff5cc;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 2px dashed #c19a6b;
+    }
+    textarea, input[type="file"] {
+      width: 100%;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      padding: 8px;
+    }
+    button {
+      background: #ffcc00;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .post img.uploaded-img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    .reactions span {
+      cursor: pointer;
+      margin-right: 10px;
+      font-size: 20px;
+    }
+    .comment-box {
+      margin-top: 10px;
+    }
+    .comment {
+      background: #fff;
+      padding: 5px 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      font-size: 0.9em;
+    }
+    .pfp {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    .delete-btn {
+      background: #ff9999;
+      border: none;
+      float: right;
+      font-size: 0.8em;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🐮 MooTube Feed</h2>
+
+<form id="postForm">
+  <textarea id="postText" placeholder="Moo something amazing..." required></textarea>
+  <input type="file" id="postImage" accept="image/*">
+  <button type="submit">Post</button>
+</form>
+
+<div id="feedContainer"></div>
+
+<!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
+<!-- Config -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC7i3hbkBAF0HpCs8-9vrPbSzHryKzSwHk",
+    authDomain: "mootube-7c44b.firebaseapp.com",
+    projectId: "mootube-7c44b",
+    storageBucket: "mootube-7c44b.appspot.com",
+    messagingSenderId: "402263503226",
+    appId: "1:402263503226:web:f0fa1874fe6294996266c3",
+    measurementId: "G-QN2CF395GC"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+
+<script src="script.js"></script>
+
+</body>
+</html>

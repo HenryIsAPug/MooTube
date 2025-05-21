@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Panel - MooTube</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a> |
+    <a href="cow-create.html">Create Cow</a> |
+    <a href="herd.html">Herd</a> |
+    <a href="admin.html">Admin</a>
+  </nav>
+
+  <h1>🐮 Admin Panel</h1>
+  <div id="adminStatus">Checking admin access...</div>
+
+  <h2>Pending Approval</h2>
+  <div id="cowListPending"></div>
+
+  <h2>✅ Approved Cows</h2>
+  <div id="cowListApproved"></div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7i3hbkBAF0HpCs8-9vrPbSzHryKzSwHk",
+      authDomain: "mootube-7c44b.firebaseapp.com",
+      projectId: "mootube-7c44b",
+      storageBucket: "mootube-7c44b.appspot.com",
+      messagingSenderId: "402263503226",
+      appId: "1:402263503226:web:f0fa1874fe6294996266c3",
+      measurementId: "G-QN2CF395GC"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const adminUid = "dsI7gc8ADDhyvdD2lR023Jt2qjH2"; // Replace with your actual UID
+
+    const adminStatus = document.getElementById('adminStatus');
+    const cowListPending = document.getElementById('cowListPending');
+    const cowListApproved = document.getElementById('cowListApproved');
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      if (user.uid !== adminUid) {
+        adminStatus.textContent = "⛔ Access denied. You're not the admin!";
+        return;
+      }
+
+      adminStatus.textContent = "✅ Admin access granted.";
+
+      loadCows(false); // unapproved
+      loadCows(true);  // approved
+    });
+
+    async function loadCows(approved) {
+      const targetDiv = approved ? cowListApproved : cowListPending;
+      const label = approved ? "Approved" : "Unapproved";
+
+      try {
+        const snapshot = await db.collection("cows").where("approved", "==", approved).get();
+        if (snapshot.empty) {
+          targetDiv.innerHTML = `<p>No ${label.toLowerCase()} cows found.</p>`;
+          return;
+        }
+
+        targetDiv.innerHTML = ""; // clear old
+        snapshot.forEach((doc) => {
+          const cow = doc.data();
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <h3>${cow.name}</h3>
+            <p><strong>Personality:</strong> ${cow.personality}</p>
+            ${cow.imageUrl ? `<img src="${cow.imageUrl}" width="150" />` : ""}
+            <p>
+              ${approved 
+                ? `<button onclick="unapproveCow('${doc.id}')">🚫 Unapprove</button>` 
+                : `<button onclick="approveCow('${doc.id}')">✅ Approve</button>`}
+              <button onclick="deleteCow('${doc.id}')">🗑️ Delete</button>
+            </p>
+            <hr/>
+          `;
+          targetDiv.appendChild(div);
+        });
+      } catch (err) {
+        targetDiv.innerHTML = `<p>Error loading ${label.toLowerCase()} cows: ${err.message}</p>`;
+      }
+    }
+
+    async function approveCow(id) {
+      try {
+        await db.collection("cows").doc(id).update({ 
+          approved: true,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Cow approved!");
+        location.reload();
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function unapproveCow(id) {
+      try {
+        await db.collection("cows").doc(id).update({ 
+          approved: false,
+          // optionally update timestamp here if you want
+        });
+        alert("Cow unapproved.");
+        location.reload();
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function deleteCow(id) {
+      if (confirm("Delete this cow forever?")) {
+        try {
+          await db.collection("cows").doc(id).delete();
+          alert("Cow deleted.");
+          location.reload();
+        } catch (err) {
+          alert("Error: " + err.message);
+        }
+      }
+    }
+
+    // Make functions global for onclick handlers in HTML
+    window.approveCow = approveCow;
+    window.unapproveCow = unapproveCow;
+    window.deleteCow = deleteCow;
+  </script>
+</body>
+</html>

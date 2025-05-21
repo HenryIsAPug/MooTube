@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create a Cow</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a> |
+    <a href="cow-create.html">Create Cow</a> |
+    <a href="herd.html">Herd</a> |
+    <a href="friends.html">Friends</a> |
+    <a href="messages.html">Messages</a>
+  </nav>
+
+  <h1>🐄 Create Your Highland Cow</h1>
+
+  <div id="cowForm">
+    <input type="text" id="cowName" placeholder="Cow Name" />
+    <input type="text" id="cowPersonality" placeholder="Cow Personality" />
+    <input type="file" id="cowImage" accept="image/*" />
+    <button onclick="createCow()">Create Cow</button>
+    <div id="status"></div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7i3hbkBAF0HpCs8-9vrPbSzHryKzSwHk",
+      authDomain: "mootube-7c44b.firebaseapp.com",
+      projectId: "mootube-7c44b",
+      storageBucket: "mootube-7c44b.appspot.com",
+      messagingSenderId: "402263503226",
+      appId: "1:402263503226:web:f0fa1874fe6294996266c3",
+      measurementId: "G-QN2CF395GC"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const cowNameInput = document.getElementById('cowName');
+    const cowPersonalityInput = document.getElementById('cowPersonality');
+    const cowImageInput = document.getElementById('cowImage');
+    const statusDiv = document.getElementById('status');
+
+    async function createCow() {
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please log in!');
+        return;
+      }
+
+      const name = cowNameInput.value.trim();
+      const personality = cowPersonalityInput.value.trim();
+
+      if (!name || !personality) {
+        statusDiv.textContent = 'Please fill in all fields.';
+        return;
+      }
+
+      statusDiv.textContent = 'Creating your cow... 🐮✨';
+
+      try {
+        let imageUrl = null;
+
+        if (cowImageInput.files.length > 0) {
+          const file = cowImageInput.files[0];
+          const fileRef = storage.ref().child(`cowImages/${user.uid}/${Date.now()}-${file.name}`);
+          await fileRef.put(file);
+          imageUrl = await fileRef.getDownloadURL();
+        }
+
+        const cowData = {
+          name,
+          personality,
+          imageUrl: imageUrl || null,
+          ownerId: user.uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          approved: false,
+          votes: 0
+        };
+
+        await db.collection('cows').add(cowData);
+
+        statusDiv.textContent = 'Cow created and submitted for approval! 🐄🎉';
+        cowNameInput.value = '';
+        cowPersonalityInput.value = '';
+        cowImageInput.value = '';
+      } catch (err) {
+        statusDiv.textContent = 'Error creating cow: ' + err.message;
+      }
+    }
+
+    window.createCow = createCow;
+
+    // Redirect if not logged in
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
